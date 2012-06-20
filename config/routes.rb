@@ -1,10 +1,16 @@
-ActionController::Routing::Routes.draw do |map|
-  map.resource :kanban, :member => {:sync => :put} do |kanban|
-    kanban.resources :user_kanbans, :as => 'users'
-    kanban.resource :user_kanbans, :as => 'my-requests'
-    kanban.resources :assigned_kanbans, :as => 'assigned-to'
-    kanban.resource :assigned_kanbans, :as => 'my-assigned', :only => [:show]
-    kanban.resource :kanban_overviews, :as => 'overview', :only => [:show]
+RedmineApp::Application.routes.draw do
+  resource :kanban do
+    put 'sync', :on => :member
+    resources :users, :controller => 'user_kanbans', :as => 'user_kanbans'
+    #resource "my-requests", :controller => 'user_kanbans'
+    resources "assigned-to", :controller => 'assigned_kanbans', :as => 'assigned_kanbans'
+    #resource "my-assigned", :controller => 'assigned_kanbans', :only => [:show]
+    resource :overview, :controller => 'kanban_overviews', :only => [:show]
   end
-  map.resources :kanban_issues
+  match '/kanban/my-requests(/:id)' => 'user_kanbans#show'
+  match '/kanban/my-requests' => 'user_kanbans#create', :via => :post
+  #match '/kanban/assigned-to(/:id)' => 'assigned_kanbans#show', :as => 'kanban_assigned_kanbans'
+  match '/kanban/assigned-to' => 'assigned_kanbans#create', :via => :post
+  match '/kanban/my-assigned(/:id)' => 'assigned_kanbans#show'
+  resources :kanban_issues
 end
